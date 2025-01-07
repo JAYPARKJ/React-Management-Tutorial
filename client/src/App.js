@@ -1,7 +1,7 @@
-import React, { Component } from "react";
+import React from "react";
 import './App.css';
 import Customer from './Component/Customer'; // 확장자 .js는 생략 가능
-import { Table, TableBody, TableHead, TableRow, TableCell, Paper } from "@mui/material";
+import { Table, TableBody, TableHead, TableRow, TableCell, Paper, CircularProgress } from "@mui/material";
 import { styled } from '@mui/system';  // styled 임포트
 
 const Styles = {
@@ -12,22 +12,30 @@ const Styles = {
   },
   table: {
     minWidth: 1080
+  },
+  progress: {
+    margin: '20px'
   }
+
 };
  
  
 const StyledPaper = styled(Paper)(Styles.root);  // Paper에 스타일을 적용한 컴포넌트
 const StyledTable = styled(Table)(Styles.table);  // Table에 스타일을 적용한 컴포넌트
-
+// 버전차이로 인한 styled 통한 변수 작성 01.08
+const StyledCircularProgress = styled(CircularProgress)(Styles.progress); //CircularProgress에 스타일을 적용한 컴포넌트 
 class App extends React.Component {
 
   state = {
-    customers: ""
+    customers: "",
+    completed:0
   }
   componentDidMount() {
-    this.callApi()
-      .then(res => this.setState({customers: res}))
-      .catch(err => console.log(err));
+    this.timer = setInterval(this.progress, 20);
+    // 일부로 프로그래스바 나오게 로딩지연 발생시키기
+    // this.callApi()
+    //   .then(res => this.setState({customers: res}))
+    //   .catch(err => console.log(err));
   }
   
   callApi = async () => {
@@ -35,8 +43,13 @@ class App extends React.Component {
     const body = await response.json();
     return body;
   }
+  
+  progress = () => {
+    const {completed} = this.state;
+    this.setState({completed: completed >=100 ? 0 : completed + 1 });
+  }
   render() {
-    const {classes} = this.props; 
+    // const { classes } = this.props; 
     return (
       <StyledPaper>
         <StyledTable>
@@ -63,7 +76,14 @@ class App extends React.Component {
                   job={c.job}
                 />
               );
-            }) : ""}
+            }) : 
+            // progress 바 설정
+            <TableRow>
+              <TableCell colsapn="6" align="center">
+                  <StyledCircularProgress variant="determinate" value={this.state.completed}/>
+              </TableCell>
+            </TableRow>
+            }
           </TableBody>
         </StyledTable>
       </StyledPaper>
